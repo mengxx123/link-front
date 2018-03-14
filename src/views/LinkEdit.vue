@@ -5,7 +5,9 @@
                 <ui-text-field v-model="link.name" label="名称" />
             </div>
             <ui-timeline>
-                <ui-timeline-item v-for="node, index in link.nodes">
+                <ui-timeline-item
+                        :key="node.id"
+                        v-for="node, index in link.nodes">
                     <span slot="time">步骤 {{ index + 1 }}</span>
                     <span slot="des">{{ node.name }}</span>
                     <div slot="des">
