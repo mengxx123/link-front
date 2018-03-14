@@ -1,9 +1,6 @@
 <template>
     <my-page title="关于">
         <div>Link v1.0.0</div>
-        <ui-article>
-            <h2>介绍</h2>
-        </ui-article>
     </my-page>
 </template>
 
