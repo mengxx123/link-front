@@ -1,6 +1,7 @@
 <template>
     <my-page title="Link" :page="page">
         <div class="link-list">
+            <div v-if="!links.length">请点击右上角的“+”号添加任务</div>
             <li class="item" v-for="link in links">
                 <router-link class="link" :to="'/links/' + link.id">
                     <div>{{ link.name }}</div>
@@ -53,7 +54,7 @@
             /*width: 100%;*/
             max-width: 400px;
             /*height: 80px;*/
-            margin-right: 16px;
+            /*margin-right: 16px;*/
             margin-bottom: 16px;
             background-color: #fff;
             box-shadow: 0 1px 6px rgba(0,0,0,.117647), 0 1px 4px rgba(0,0,0,.117647);

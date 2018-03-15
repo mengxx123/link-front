@@ -1,12 +1,13 @@
 <template>
     <my-page :title="title" :page="page" backable>
-        <ui-text-field v-model="input" hintText="输入内容" />
+        <ui-text-field v-model="input" hintText="输入内容" multiLine :rows="4" :maxRows="4" />
         <div class="btns">
             <ui-raised-button class="btn" label="确定" primary @click="start" />
             <ui-raised-button class="btn" label="重置" @click="reset" />
             <ui-raised-button class="btn btn-copy" label="复制结果" :data-clipboard-text="output" v-if="output" />
+            <ui-raised-button class="btn" label="下载结果" @click="download" v-if="output" />
         </div>
-        <div v-if="output">{{ output }}</div>
+        <pre v-if="output">{{ output }}</pre>
     </my-page>
 </template>
 
@@ -14,6 +15,7 @@
     /* eslint-disable */
     import linksData from '../data/links'
     const ClipboardJS = window.ClipboardJS
+    const saveAs = window.saveAs
 
     export default {
         data () {
@@ -79,13 +81,22 @@
                 }
                 let output = this.input
                 for (let idx in this.link.nodes) {
-                    output = this.execCode(output, this.link.nodes[idx].code)
+                    let node = this.link.nodes[idx]
+                    if (node.type === 'code') {
+                        output = this.execCode(output, node.code)
+                    } else {
+                        output = window.prompt('请输入一段文本')
+                    }
                 }
                 this.output = output
             },
             execCode(input, code) {
+                // TODO
+                if (typeof input === 'string') {
+                    input = '`' + input.replace(/`/g, '\\`') + '`'
+                }
                 var ret
-                let code2 = code + '\nret = f(\'' + input + '\')'
+                let code2 = code + '\nret = f(' + input + ')'
                 console.log(code2)
                 // eslint-disable-next-line
                 eval(code2)
@@ -110,6 +121,10 @@
                 }
                 this.$storage.set('links', links)
                 this.$router.go(-1)
+            },
+            download() {
+                let blob = new Blob([this.output], {type: 'text/plain;charset=utf-8'})
+                saveAs(blob, '结果.txt')
             }
         }
     }

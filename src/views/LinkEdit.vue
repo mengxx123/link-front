@@ -2,7 +2,7 @@
     <my-page title="编辑任务" :page="page" backable>
         <form v-if="link">
             <div>
-                <ui-text-field v-model="link.name" label="名称" />
+                <ui-text-field v-model="link.name" label="名称" hintText="只有一个步骤时可以不填" />
             </div>
             <ui-timeline>
                 <ui-timeline-item
@@ -32,15 +32,15 @@
                 </li>
             </ul>
 
-            <ul class="node-list">
-                <li class="item" v-for="node, index in link.nodes">
-                    <div><ui-badge :content="'' + (index + 1)" /></div>
-                    <div>名称：<ui-text-field v-model="node.name" /></div>
-                    <div>输入：{{ node.input }}</div>
-                    <div>输出：{{ node.output }}</div>
-                    <textarea class="code" v-model="node.code"></textarea>
-                </li>
-            </ul>
+            <!--<ul class="node-list">-->
+                <!--<li class="item" v-for="node, index in link.nodes">-->
+                    <!--<div><ui-badge :content="'' + (index + 1)" /></div>-->
+                    <!--<div>名称：<ui-text-field v-model="node.name" /></div>-->
+                    <!--<div>输入：{{ node.input }}</div>-->
+                    <!--<div>输出：{{ node.output }}</div>-->
+                    <!--<textarea class="code" v-model="node.code"></textarea>-->
+                <!--</li>-->
+            <!--</ul>-->
         </form>
         <ui-drawer right :open="open" @close="toggle()">
             <ui-appbar title="步骤">
@@ -107,8 +107,12 @@
         methods: {
             finish() {
                 if (!this.link.name) {
-                    alert('请输入任务名称')
-                    return
+                    if (this.link.nodes.length === 1) {
+                        this.link.name = this.link.nodes[0].name
+                    } else {
+                        alert('请输入任务名称')
+                        return
+                    }
                 }
                 if (!this.link.nodes.length) {
                     alert('请添加步骤')
@@ -142,7 +146,8 @@
                 if (!node) {
                     node = {
                         id: '' + new Date().getTime(),
-                        name: '计算字符串的长度',
+                        type: 'code',
+                        name: '',
                         input: 'String',
                         output: 'String',
                         code: `function f(input) {
@@ -201,7 +206,13 @@
         }
     }
     .code-list {
+        position: absolute;
+        top: 64px;
+        left: 0;
+        bottom: 0;
+        width: 100%;
         padding: 16px;
+        overflow: auto;
         .item {
             padding: 16px;
             margin-bottom: 16px;
