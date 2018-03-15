@@ -129,7 +129,22 @@ let nodes = [
         code: `function f(input) {
 	return input.split('\\n').sort().reverse().join('\\n')
 }`
+    },
+    {
+        type: 'code',
+        name: '对每一行的数字进行求和',
+        description: '',
+        input: 'String',
+        output: 'String',
+        code: `function f(input) {
+    let numbers = input.split('\n').map(number => parseInt(number))
+	let sum = 0
+	for (let number of numbers) {
+        sum += number
+	}
+	return sum
+}`
     }
 ]
-export default nodes
 
+export default nodes
