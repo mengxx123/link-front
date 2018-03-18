@@ -42,7 +42,7 @@
                 <!--</li>-->
             <!--</ul>-->
         </form>
-        <ui-drawer right :open="open" @close="toggle()">
+        <ui-drawer class="node-box" right :open="open" @close="toggle()">
             <ui-appbar title="步骤">
                 <ui-icon-button icon="close" slot="left" @click="open = false" />
             </ui-appbar>
@@ -51,8 +51,26 @@
                     @click="addNode(node)"
                     v-for="node in nodes">
                     {{ node.name }}
+                    <ui-icon-button class="help" icon="help" @click.stop="showHelp(node)" title="点击查询详情" />
                 </li>
             </ul>
+        </ui-drawer>
+        <ui-drawer class="detail-box" right :open="detailBoxVisible" @close="hideDetailBox()">
+            <ui-appbar title="详情">
+                <ui-icon-button icon="close" slot="left" @click="hideDetailBox" />
+            </ui-appbar>
+            <div class="body" v-if="helpNode">
+                <div v-if="helpNode.type === 'input'">
+                    <div class="info">名称：{{ helpNode.name }}</div>
+                    <div class="info">描述：{{ helpNode.description }}</div>
+                </div>
+                <div v-else>
+                    <div class="info">名称：{{ helpNode.name }}</div>
+                    <div class="info">描述：{{ helpNode.description }}</div>
+                    <div class="info">输入：{{ helpNode.input }}</div>
+                    <div class="info">输出：{{ helpNode.output }}</div>
+                </div>
+            </div>
         </ui-drawer>
     </my-page>
 </template>
@@ -72,6 +90,8 @@
                 open: false,
                 nodes: nodes,
                 node: null,
+                detailBoxVisible: false,
+                helpNode: null,
                 page: {
                     menu: [
                         {
@@ -123,6 +143,13 @@
                 } else  {
                     this.save()
                 }
+            },
+            showHelp(node) {
+                this.helpNode = node
+                this.detailBoxVisible = true
+            },
+            hideDetailBox() {
+                this.detailBoxVisible = false
             },
             add() {
                 let links = this.$storage.get('links', linksData)
@@ -183,8 +210,23 @@
 <style lang="scss" scoped>
     @import "../scss/var";
 
+    .node-box {
+        width: 100%;
+        max-width: 320px;
+    }
+    .detail-box {
+        width: 100%;
+        max-width: 320px;
+        .body {
+            padding: 16px;
+        }
+        .info {
+            margin-bottom: 8px;
+        }
+    }
     .node-list {
         .item {
+            position: relative;
             padding: 16px;
             max-width: 400px;
             margin-bottom: 16px;
@@ -214,11 +256,18 @@
         padding: 16px;
         overflow: auto;
         .item {
+            position: relative;
             padding: 16px;
             margin-bottom: 16px;
             background-color: #fff;
             box-shadow: 0 1px 6px rgba(0,0,0,.117647), 0 1px 4px rgba(0,0,0,.117647);
             cursor: pointer;
+        }
+        .help {
+            position: absolute;
+            top: 0;
+            right: 0;
+            color: #999;
         }
     }
 </style>

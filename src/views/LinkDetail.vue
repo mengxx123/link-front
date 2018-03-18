@@ -82,10 +82,10 @@
                 let output = this.input
                 for (let idx in this.link.nodes) {
                     let node = this.link.nodes[idx]
-                    if (node.type === 'code') {
-                        output = this.execCode(output, node.code)
-                    } else {
+                    if (node.type === 'input') {
                         output = window.prompt('请输入一段文本')
+                    } else {
+                        output = this.execCode(output, node.code)
                     }
                 }
                 this.output = output
