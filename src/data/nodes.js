@@ -1,6 +1,13 @@
 /* eslint-disable */
 let nodes = [
     {
+        type: 'file',
+        name: '让用户选择',
+        description: '',
+        input: 'String',
+        output: 'String'
+    },
+    {
         type: 'input',
         name: '让用户输入文本',
         description: '',
@@ -135,14 +142,140 @@ let nodes = [
         name: '对每一行的数字进行求和',
         description: '',
         input: 'String',
-        output: 'String',
+        output: 'Number',
         code: `function f(input) {
-    let numbers = input.split('\n').map(number => parseInt(number))
+    let numbers = input.split('\\n').map(number => parseInt(number))
 	let sum = 0
 	for (let number of numbers) {
         sum += number
 	}
 	return sum
+}`
+    },
+    {
+        type: 'code',
+        name: '在百度中搜索',
+        description: '',
+        input: 'String',
+        output: 'void',
+        code: `function f(input) {
+    window.open('https://www.baidu.com/s?ie=UTF-8&wd=' + input)
+}`
+    },
+    {
+        type: 'code',
+        name: '在谷歌中搜索',
+        description: '',
+        input: 'String',
+        output: 'void',
+        code: `function f(input) {
+    window.open('https://www.google.co.id/search?q=' + input)
+}`
+    },
+    {
+        type: 'code',
+        name: '在知乎中搜索',
+        description: '',
+        input: 'String',
+        output: 'void',
+        code: `function f(input) {
+    window.open('https://www.zhihu.com/search?type=content&q=' + input)
+}`
+    },
+    {
+        type: 'code',
+        name: '在百度翻译中翻译',
+        description: '',
+        input: 'String',
+        output: 'void',
+        code: `function f(input) {
+    window.open('http://fanyi.baidu.com/?aldtype=85#zh/en/' + input)
+}`
+    },
+    {
+        type: 'code',
+        name: '在新窗口中打开链接',
+        description: '',
+        input: 'String',
+        output: 'void',
+        code: `function f(input) {
+    window.open(input)
+}`
+    },
+    {
+        type: 'code',
+        name: '在文本编辑器中编辑',
+        description: '',
+        input: 'String',
+        output: 'void',
+        code: `function f(input) {
+    window.open('http://text.yunser.com?text=' + input)
+}`
+    },
+    {
+        type: 'code',
+        name: '在代码编辑器中编辑',
+        description: '',
+        input: 'String',
+        output: 'void',
+        code: `function f(input) {
+    window.open('http://code.yunser.com/?text=' + input)
+}`
+    },
+    {
+        type: 'code',
+        name: '生成二维码',
+        description: '',
+        input: 'String',
+        output: 'void',
+        code: `function f(input) {
+    let url = 'http://node.api.yunser.com/qrcode?content=' + input        
+    window.open(url)
+}`
+    },
+    {
+        type: 'code',
+        name: '获取 IP',
+        description: '获取当前客户端的 IP 地址',
+        input: 'void',
+        output: 'String',
+        code: `async function f(url) {
+    let ret = await ui.$http.get('http://php.yunser.com/ip.php')
+    return ret.data
+}`
+    },
+    {
+        type: 'code',
+        name: '获取页面源代码',
+        description: '输入网址',
+        input: 'String',
+        output: 'String',
+        code: `async function f(url) {
+    let ret = await ui.$http.get('http://node.api.yunser.com/http/get?url=' + url)
+    return ret.data
+}`
+    },
+    {
+        type: 'code',
+        name: '颠倒字母',
+        description: '比如把「uvwxyz」变成「zʎxʍʌn」',
+        input: 'String',
+        output: 'String',
+        code: `function f(input) {
+    let letter = 'abcdefghijklmnopqrstuvwxyz'
+    let letter2 = 'ɐqɔpǝɟƃɥıɾʞlɯuodbɹsʇnʌʍxʎz'
+    input = input.split('').reverse().join('')
+    let output = ''
+    for (let char of input) {
+        console.log(char)
+        let index = letter.indexOf(char)
+        if (index !== -1) {
+            output += letter2.charAt(index)
+        } else {
+            output += input.charAt(index)
+        }
+    }
+    return output
 }`
     }
 ]

@@ -2,7 +2,7 @@
     <my-page title="编辑任务" :page="page" backable>
         <form v-if="link">
             <div>
-                <ui-text-field v-model="link.name" label="名称" hintText="只有一个步骤时可以不填" />
+                <ui-text-field v-model="link.name" label="名称" hintText="给任务起个方便好记的名称" />
             </div>
             <ui-timeline>
                 <ui-timeline-item
@@ -20,14 +20,26 @@
                 <ui-raised-button class="btn" label="快速添加步骤" primary @click="selectNode" />
                 <ui-raised-button class="btn" label="添加步骤" @click="addNode" />
                 <ui-raised-button class="btn" label="完成" @click="finish" v-if="link.nodes.length" />
+                <ui-raised-button class="btn" label="调试" @click="debug" />
             </div>
 
             <ul class="node-list" v-if="node">
                 <li class="item">
                     <!--<div><ui-badge :content="'' + (index + 1)" /></div>-->
                     <div>名称：<ui-text-field v-model="node.name" /></div>
-                    <div>输入：{{ node.input }}</div>
-                    <div>输出：{{ node.output }}</div>
+                    <div>输入类型：
+                        <select v-model="node.input">
+                            <option value="String">文本</option>
+                            <option value="Number">数字</option>
+                        </select>
+                    </div>
+                    <div>输出类型：
+                        <select v-model="node.output">
+                            <option value="String">文本</option>
+                            <option value="Number">数字</option>
+                            <option value="void">无</option>
+                        </select>
+                    </div>
                     <textarea class="code" v-model="node.code"></textarea>
                 </li>
             </ul>
@@ -46,10 +58,13 @@
             <ui-appbar title="步骤">
                 <ui-icon-button icon="close" slot="left" @click="open = false" />
             </ui-appbar>
+            <div class="search">
+                <input v-model="keyword" placeholder="搜索步骤">
+            </div>
             <ul class="code-list">
                 <li class="item"
                     @click="addNode(node)"
-                    v-for="node in nodes">
+                    v-for="node in filtedNodes">
                     {{ node.name }}
                     <ui-icon-button class="help" icon="help" @click.stop="showHelp(node)" title="点击查询详情" />
                 </li>
@@ -67,8 +82,8 @@
                 <div v-else>
                     <div class="info">名称：{{ helpNode.name }}</div>
                     <div class="info">描述：{{ helpNode.description }}</div>
-                    <div class="info">输入：{{ helpNode.input }}</div>
-                    <div class="info">输出：{{ helpNode.output }}</div>
+                    <div class="info">输入类型：{{ helpNode.input | dataType }}</div>
+                    <div class="info">输出类型：{{ helpNode.output | dataType }}</div>
                 </div>
             </div>
         </ui-drawer>
@@ -92,6 +107,7 @@
                 node: null,
                 detailBoxVisible: false,
                 helpNode: null,
+                keyword: '',
                 page: {
                     menu: [
                         {
@@ -102,6 +118,21 @@
                         }
                     ]
                 }
+            }
+        },
+        computed: {
+            filtedNodes() {
+                if (!this.keyword) {
+                    return this.nodes
+                }
+
+                let arr = []
+                for (let node of this.nodes) {
+                    if (node.name.includes(this.keyword)) {
+                        arr.push(node)
+                    }
+                }
+                return arr
             }
         },
         mounted() {
@@ -122,6 +153,17 @@
                     title: '',
                     nodes: []
                 }
+            }
+        },
+        filters: {
+            dataType(type) {
+                switch (type) {
+                    case 'String':
+                        return '文本'
+                    case 'Number':
+                        return '数字'
+                }
+                return type
             }
         },
         methods: {
@@ -184,12 +226,16 @@
                 }
                 node.id =  '' + new Date().getTime()
                 this.link.nodes.push(node)
-//                this.open = false
+                this.open = false
+                this.keyword = ''
             },
             editNode(node) {
                 this.node = node
             },
             removeNode(node) {
+                if (this.node && this.node.id === node.id) {
+                    this.node = null
+                }
                 for (let i in this.link.nodes) {
                     if (this.link.nodes[i].id === node.id) {
                         this.link.nodes.splice(i ,1)
@@ -202,6 +248,24 @@
             },
             toggle() {
                 this.open = !this.open
+            },
+            debug() {
+                function f(input) {
+                    input = input.split('').reverse().join('')
+                    let output = ''
+                    for (let char of input) {
+                        console.log(char)
+                        let index = letter.indexOf(char)
+                        if (index !== -1) {
+                            output += letter2.charAt(index)
+                        } else {
+                            output += input.charAt(index)
+                        }
+                    }
+                    return output
+                }
+
+                console.log(f('hello world!'))
             }
         }
     }
@@ -210,13 +274,10 @@
 <style lang="scss" scoped>
     @import "../scss/var";
 
-    .node-box {
-        width: 100%;
-        max-width: 320px;
-    }
     .detail-box {
         width: 100%;
         max-width: 320px;
+        z-index: 100000;
         .body {
             padding: 16px;
         }
@@ -226,6 +287,8 @@
     }
     .node-list {
         .item {
+            float: left;
+            max-width: 300px;
             position: relative;
             padding: 16px;
             max-width: 400px;
@@ -247,9 +310,29 @@
             margin-right: 8px;
         }
     }
+    .node-box {
+        z-index: 10000;
+        width: 100%;
+        max-width: 320px;
+        .search {
+            position: absolute;
+            top: 64px;
+            left: 0;
+            width: 100%;
+            height: 64px;
+            border-bottom: 1px solid rgba(0,0,0,.12);
+            input {
+                width: 100%;
+                height: 100%;
+                padding: 16px;
+                border: none;
+                outline: none;
+            }
+        }
+    }
     .code-list {
         position: absolute;
-        top: 64px;
+        top: 128px;
         left: 0;
         bottom: 0;
         width: 100%;

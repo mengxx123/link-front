@@ -1,8 +1,14 @@
 <template>
     <my-page :title="title" :page="page" backable>
-        <ui-text-field v-model="input" hintText="输入内容" multiLine :rows="4" :maxRows="4" />
+        <div v-if="node && node.input !== 'void'">
+            <ui-text-field v-model="input" hintText="输入内容" multiLine :rows="4" :maxRows="4" />
+            <br>
+            <ui-raised-button class="file-btn" label="从文件中导入">
+                <input type="file" class="ui-file-button" @change="fileChange($event, 1)">
+            </ui-raised-button>
+        </div>
         <div class="btns">
-            <ui-raised-button class="btn" label="确定" primary @click="start" />
+            <ui-raised-button class="btn" label="开始" primary @click="start" />
             <ui-raised-button class="btn" label="重置" @click="reset" />
             <ui-raised-button class="btn btn-copy" label="复制结果" :data-clipboard-text="output" v-if="output" />
             <ui-raised-button class="btn" label="下载结果" @click="download" v-if="output" />
@@ -22,6 +28,7 @@
             return {
                 title: '详情',
                 link: null,
+                node: null,
                 input: '',
                 output: null,
                 page: {
@@ -49,7 +56,9 @@
             for (let link of links) {
                 if (link.id === linkId) {
                     this.link = link
+                    this.node = this.link.nodes[0]
                     console.log('founded')
+                    console.log(this.link)
                     break
                 }
             }
@@ -75,20 +84,39 @@
         },
         methods: {
             start() {
-                if (!this.input) {
+                if (!this.input && this.link.nodes[0].input !== 'void') {
                     alert('请输入内容')
                     return
                 }
+                window.ui = {
+                    $http: this.$http
+                }
                 let output = this.input
-                for (let idx in this.link.nodes) {
+                let execStep = idx => {
+                    if (idx >= this.link.nodes.length) {
+                        this.output = output
+                        return
+                    } 
                     let node = this.link.nodes[idx]
+                    let tempOutput
                     if (node.type === 'input') {
-                        output = window.prompt('请输入一段文本')
+                        tempOutput = window.prompt('请输入一段文本')
                     } else {
-                        output = this.execCode(output, node.code)
+                        tempOutput = this.execCode(output, node.code)
+                    }
+                    if (tempOutput instanceof Promise) {
+                        console.log('奇怪')
+                        tempOutput.then(value => {
+                            output = value
+                            execStep(idx + 1)
+                        })
+                    } else {
+                        output = tempOutput
+                        execStep(idx + 1)
                     }
                 }
-                this.output = output
+                execStep(0)
+                
             },
             execCode(input, code) {
                 // TODO
@@ -98,6 +126,7 @@
                 var ret
                 let code2 = code + '\nret = f(' + input + ')'
                 console.log(code2)
+                console.log('运行')
                 // eslint-disable-next-line
                 eval(code2)
                 console.log('输出')
@@ -125,6 +154,21 @@
             download() {
                 let blob = new Blob([this.output], {type: 'text/plain;charset=utf-8'})
                 saveAs(blob, '结果.txt')
+            },
+            fileChange(e, left) {
+                let _this = this
+                let file = e.target.files[0]
+                // if (left === 1) {
+                //     var f_name = file.name;
+                //     var f_type = f_name.substring(f_name.lastIndexOf("."))
+                // }
+                let reader = new FileReader()
+                reader.onload = e => {
+                    let content = e.target.result
+                    this.input = content
+                    console.log(content)
+                }
+                reader.readAsText(file, 'utf-8')
             }
         }
     }
@@ -133,6 +177,9 @@
 <style lang="scss" scoped>
     @import "../scss/var";
 
+    .file-btn {
+        margin-bottom: 16px;
+    }
     .btns {
         margin-bottom: 16px;
         .btn {
