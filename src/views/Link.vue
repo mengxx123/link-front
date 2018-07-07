@@ -8,8 +8,8 @@
                 </router-link>
             </li>
         </div>
-        <ui-icon-button class="float-btn-help" icon="help" to="/help" v-if="!embed" />
-        <ui-float-button class="float-btn-add" icon="add" to="/link/add" v-if="!embed" />
+        <ui-icon-button class="float-btn-help" icon="help" to="/help" v-if="embed" />
+        <ui-float-button class="float-btn-add" icon="add" to="/link/add" v-if="embed" />
     </my-page>
 </template>
 
