@@ -8,6 +8,8 @@
                 </router-link>
             </li>
         </div>
+        <ui-icon-button class="float-btn-help" icon="help" to="/help" v-if="!embed" />
+        <ui-float-button class="float-btn-add" icon="add" to="/link/add" v-if="!embed" />
     </my-page>
 </template>
 
@@ -17,6 +19,7 @@
     export default {
         data () {
             return {
+                embed: false,
                 input: 'function f(input) {return 1+input}',
                 links: [],
                 page: {
@@ -36,6 +39,9 @@
             }
         },
         mounted() {
+            let isInFrame = window.self !== window.top
+            this.embed = this.$route.query.embed === 'true' && isInFrame
+
             this.links = this.$storage.get('links', links)
             console.log(this.links)
         },
@@ -63,5 +69,18 @@
             display: block;
             padding: 16px;
         }
+    }
+    .float-btn-add {
+        position: fixed;
+        right: 24px;
+        bottom: 24px;
+        box-shadow: 0 1px 6px rgba(0,0,0,.117647), 0 1px 4px rgba(0,0,0,.117647);
+    }
+    .float-btn-help {
+        position: fixed;
+        left: 24px;
+        bottom: 24px;
+        box-shadow: 0 1px 6px rgba(0,0,0,.117647), 0 1px 4px rgba(0,0,0,.117647);
+        color: #666;
     }
 </style>
